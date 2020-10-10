@@ -264,7 +264,7 @@ func Dumper(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 	go dumpViewSchema(log, engine, args)
 
 	for _, table := range tables {
-		if args.Table == table.Name {
+		if strings.Contains(args.Table, table.Name) {
 			dumpTableSchema(log, engine, args, table.Name)
 		}
 
@@ -274,7 +274,7 @@ func Dumper(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 				wg.Done()
 			}()
 			// excludeTable can't dump data
-			if args.Table == table.Name {
+			if strings.Contains(args.Table, table.Name) {
 				log.Info("dumping.table[%s.%s].datas...", args.Database, table.Name)
 				dumpTable(log, engine, args, table)
 				log.Info("dumping.table[%s.%s].datas.done...", args.Database, table.Name)

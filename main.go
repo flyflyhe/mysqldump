@@ -35,7 +35,7 @@ func init() {
 	flag.IntVar(&flagThreads, "t", 16, "Number of threads to use")
 	flag.IntVar(&flagStmtSize, "s", 1000000, "Attempted size of INSERT statement in bytes")
 	flag.StringVar(&flagSource, "m", "", "Mysql source info in one string, format: user:password@host:port")
-	flag.StringVar(&flagTable, "table", "", "Mysql table")
+	flag.StringVar(&flagTable, "table", "", "Mysql table use ',' to split multiple table")
 	flag.StringVar(&flagWhere, "where", "", "created > '2020-09-01'")
 	flag.StringVar(&flagPk, "pk", "id", "id")
 	flag.IntVar(&flagDelete, "D", 0, "1删除 0不删")
