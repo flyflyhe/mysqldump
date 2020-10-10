@@ -12,12 +12,15 @@ import (
 type Args struct {
 	Database      string
 	Outdir        string
-	ExcludeTables string
+	Table         string
 	Threads       int
 	ChunksizeInMB int
 	StmtSize      int
 	Allbytes      uint64
 	Allrows       uint64
+	Where         string
+	Pk            string
+	Delete        int
 
 	// Interval in millisecond.
 	IntervalMs int

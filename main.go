@@ -16,9 +16,9 @@ import (
 const Pattern = `\w+:\w+@[\w.]+:\d{0,5}$`
 
 var (
-	engine                                                                                            *xorm.Engine
-	flagChunksize, flagThreads, flagPort, flagStmtSize                                                int
-	flagUser, flagPasswd, flagHost, flagSource, flagDb, flagOutputDir, flagInputDir, flagExcludeTable string
+	engine                                                                                                        *xorm.Engine
+	flagChunksize, flagThreads, flagPort, flagStmtSize, flagDelete                                                int
+	flagUser, flagPasswd, flagHost, flagSource, flagDb, flagOutputDir, flagInputDir, flagTable, flagWhere, flagPk string
 
 	log = xlog.NewStdLog(xlog.Level(xlog.INFO))
 )
@@ -31,16 +31,19 @@ func init() {
 	flag.StringVar(&flagDb, "db", "", "Database to dump or database to import")
 	flag.StringVar(&flagOutputDir, "o", "", "Directory to output files to")
 	flag.StringVar(&flagInputDir, "i", "", "Directory of the dump to import")
-	flag.IntVar(&flagChunksize, "F", 128, "Split tables into chunks of this output file size. This value is in MB")
+	flag.IntVar(&flagChunksize, "F", 512, "Split tables into chunks of this output file size. This value is in MB")
 	flag.IntVar(&flagThreads, "t", 16, "Number of threads to use")
 	flag.IntVar(&flagStmtSize, "s", 1000000, "Attempted size of INSERT statement in bytes")
 	flag.StringVar(&flagSource, "m", "", "Mysql source info in one string, format: user:password@host:port")
-	flag.StringVar(&flagExcludeTable, "exclude", "", "Do not dump the specified table data, use ',' to split multiple table")
+	flag.StringVar(&flagTable, "table", "", "Mysql table")
+	flag.StringVar(&flagWhere, "where", "", "created > '2020-09-01'")
+	flag.StringVar(&flagPk, "pk", "id", "id")
+	flag.IntVar(&flagDelete, "D", 0, "1删除 0不删")
 	flag.Usage = usage
 }
 
 func usage() {
-	fmt.Println("Usage: " + os.Args[0] + " -h [HOST] -P [PORT] -u [USER] -p [PASSWORD] -db [DATABASE] -o [OUTDIR] -i [INDIR] -m [MYSQL_SOURCE] -exclude [EXCLUDE_TABLE]")
+	fmt.Println("Usage: " + os.Args[0] + " -h [HOST] -P [PORT] -u [USER] -p [PASSWORD] -db [DATABASE] -o [OUTDIR] -i [INDIR] -m [MYSQL_SOURCE] -table [table]")
 	flag.PrintDefaults()
 	os.Exit(0)
 }
@@ -113,7 +116,10 @@ func generateArgs() *common.Args {
 		Threads:       flagThreads,
 		StmtSize:      flagStmtSize,
 		IntervalMs:    10 * 1000,
-		ExcludeTables: flagExcludeTable,
+		Table:         flagTable,
+		Where:         flagWhere,
+		Pk:            flagPk,
+		Delete:        flagDelete,
 	}
 
 	return args

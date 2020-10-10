@@ -63,8 +63,18 @@ func dumpTableSchema(log *xlog.Log, engine *xorm.Engine, args *common.Args, tabl
 func dumpTable(log *xlog.Log, engine *xorm.Engine, args *common.Args, table *core.Table) {
 	var allBytes uint64
 	var allRows uint64
+	var querySql string
+	var startId int64
+	var endId int64
 
-	cursor, err := engine.DB().Query(fmt.Sprintf("SELECT /*backup*/ * FROM `%s`.`%s`", args.Database, table.Name))
+	if args.Where != "" {
+		querySql = fmt.Sprintf("SELECT /*backup*/ * FROM `%s`.`%s` where %s", args.Database, table.Name, args.Where)
+	} else {
+		querySql = fmt.Sprintf("SELECT /*backup*/ * FROM `%s`.`%s`", args.Database, table.Name)
+	}
+
+	log.Println("query sql : ", querySql)
+	cursor, err := engine.DB().Query(querySql)
 	common.AssertNil(err)
 
 	cols := table.ColumnsSeq()
@@ -84,6 +94,22 @@ func dumpTable(log *xlog.Log, engine *xorm.Engine, args *common.Args, table *cor
 		var temp string
 		for i, d := range dest {
 			col := table.GetColumn(cols[i])
+
+			if col.Name == args.Pk {
+				var id int64
+				switch reflect.TypeOf(d).Kind() {
+				case reflect.Slice:
+					id, _ = strconv.ParseInt(string(d.([]byte)), 10, 64)
+				case reflect.Int16, reflect.Int8, reflect.Int32, reflect.Int64, reflect.Int:
+					id = d.(int64)
+				case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+					id = d.(int64)
+				}
+				if startId == 0 {
+					startId = id
+				}
+				endId = id
+			}
 
 			if d == nil {
 				temp += ", NULL"
@@ -177,7 +203,46 @@ func dumpTable(log *xlog.Log, engine *xorm.Engine, args *common.Args, table *cor
 	err = cursor.Close()
 	common.AssertNil(err)
 
+	log.Println("startId", startId, "endId", endId)
+	log.Println("delete", args.Delete)
+	if args.Delete == 1 {
+		Delete(startId, endId, args)
+	}
 	log.Info("dumping.table[%s.%s].done.allrows[%v].allbytes[%vMB]...", args.Database, table.Name, allRows, allBytes/1024/1024)
+}
+
+func Delete(startId, endId int64, args *common.Args)  {
+	if startId > endId {
+		return
+	}
+
+	start := startId
+	batch := int64(1000)
+	for {
+		end := start + batch
+		if end > endId {
+			end = endId
+		}
+
+		deleteSql := fmt.Sprintf("delete from `%s` where  `%s` >= %d and `%s` <= %d", args.Table, args.Pk, start, args.Pk, end)
+		log.Println("delete sql:", deleteSql)
+		result, err := engine.DB().Exec(deleteSql)
+		if err != nil {
+			log.Println("delete err:", err)
+		} else {
+			line, err := result.RowsAffected()
+			if err != nil {
+				log.Println("rows err:", err)
+			} else {
+				log.Println("删除行数:", line)
+			}
+		}
+
+		start = end
+		if end >= endId {
+			break
+		}
+	}
 }
 
 // Dumper used to start the dumper worker.
@@ -199,7 +264,9 @@ func Dumper(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 	go dumpViewSchema(log, engine, args)
 
 	for _, table := range tables {
-		dumpTableSchema(log, engine, args, table.Name)
+		if args.Table == table.Name {
+			dumpTableSchema(log, engine, args, table.Name)
+		}
 
 		wg.Add(1)
 		go func(engine *xorm.Engine, table *core.Table) {
@@ -207,7 +274,7 @@ func Dumper(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 				wg.Done()
 			}()
 			// excludeTable can't dump data
-			if !strings.Contains(args.ExcludeTables, table.Name) {
+			if args.Table == table.Name {
 				log.Info("dumping.table[%s.%s].datas...", args.Database, table.Name)
 				dumpTable(log, engine, args, table)
 				log.Info("dumping.table[%s.%s].datas.done...", args.Database, table.Name)
