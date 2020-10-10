@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/go-xorm/xorm"
+	"github.com/syyongx/php2go"
 	"os"
 	"path/filepath"
 	"strings"
@@ -77,6 +78,19 @@ func restoreSchema(log *xlog.Log, engine *xorm.Engine, schemas []string, key str
 	}
 }
 
+func checkSchema(log *xlog.Log, engine *xorm.Engine, schemas []string, key string) {
+	for _, schema := range schemas {
+		name := strings.TrimSuffix(filepath.Base(schema), fmt.Sprintf("-%s.sql", key))
+
+		data, err := common.ReadFile(schema)
+		common.AssertNil(err)
+		query := common.BytesToString(data)
+		_, err = engine.DB().Exec(php2go.StrReplace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS", query, 1))
+		common.AssertNil(err)
+		log.Info("check.schema.%s[%s]", key, name)
+	}
+}
+
 func restoreData(log *xlog.Log, table string, engine *xorm.Engine) int {
 	part := "0"
 	base := filepath.Base(table)
@@ -111,7 +125,7 @@ func Loader(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 	_, _ = engine.DB().Exec("SET FOREIGN_KEY_CHECKS=0")
 	go restoreSchema(log, engine, files.functions, "function")
 	go restoreSchema(log, engine, files.procedures, "procedure")
-	restoreSchema(log, engine, files.tables, "table")
+	checkSchema(log, engine, files.tables, "table")
 	restoreSchema(log, engine, files.views, "view")
 
 	var wg sync.WaitGroup
