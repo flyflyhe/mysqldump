@@ -46,7 +46,7 @@ func dumpRoutineSchema(log *xlog.Log, engine *xorm.Engine, args *common.Args, ro
 		common.AssertNil(err)
 
 		schema := create[0][fmt.Sprintf("Create %s", strings.Title(strings.ToLower(routineType)))] + ";\n"
-		file := fmt.Sprintf("%s/%s-%s.sql", args.Outdir, routineName, strings.ToLower(routineType))
+		file := fmt.Sprintf("%s/%s-%s-%s.sql", args.Outdir, routineName, time.Now().Format("20060102") ,strings.ToLower(routineType))
 		_ = common.WriteFile(file, schema)
 		log.Info("dumping.routine[%s.%s].schema...", args.Database, routineName)
 	}
@@ -197,7 +197,7 @@ func dumpTable(log *xlog.Log, engine *xorm.Engine, args *common.Args, table *cor
 		}
 
 		query := strings.Join(inserts, ";\n") + ";\n"
-		file := fmt.Sprintf("%s/%s.%05d.sql", args.Outdir, table.Name, fileNo)
+		file := fmt.Sprintf("%s/%s.%s.%05d.sql", args.Outdir, time.Now().Format("20060102"), table.Name, fileNo)
 		_ = common.WriteFile(file, query)
 	}
 	err = cursor.Close()
