@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const Pattern = `\w+:\w+@[\w.]+:\d{0,5}$`
@@ -18,7 +19,7 @@ const Pattern = `\w+:\w+@[\w.]+:\d{0,5}$`
 var (
 	engine                                                                                                        *xorm.Engine
 	flagChunksize, flagThreads, flagPort, flagStmtSize, flagDelete, flagZip                                       int
-	flagUser, flagPasswd, flagHost, flagSource, flagDb, flagOutputDir, flagInputDir, flagTable, flagWhere, flagPk, flagZipName string
+	flagUser, flagPasswd, flagHost, flagSource, flagDb, flagOutputDir, flagInputDir, flagTable, flagWhere, flagPk, flagZipName, flagUri string
 
 	log = xlog.NewStdLog(xlog.Level(xlog.INFO))
 )
@@ -41,6 +42,7 @@ func init() {
 	flag.IntVar(&flagDelete, "D", 0, "1删除 0不删")
 	flag.IntVar(&flagZip, "z", 0, "1压缩 0不压缩")
 	flag.StringVar(&flagZipName, "zn", "", "zip name")
+	flag.StringVar(&flagUri, "uri", "", "完成后通知地址 http://127.0.0.1")
 
 	flag.Usage = usage
 }
@@ -138,6 +140,19 @@ func main() {
 		if flagZip == 1 {
 			_ = Zip(flagZipName, args.Outdir)
 		}
+
+		if flagUri != "" {
+			for i := 0; i < 10; i++{
+				err := Notify(flagUri, flagZipName, flagZip)
+				if err != nil {
+					time.Sleep(time.Second * (time.Duration(i) + 2))
+					continue
+				} else {
+					break
+				}
+			}
+		}
+
 	} else {
 		if flagZip == 1 {
 			_ = UnZip(args.Outdir, flagZipName)
