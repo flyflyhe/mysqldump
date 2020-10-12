@@ -16,12 +16,16 @@ func (msg Msg) Error() string  {
 	return msg.Msg
 }
 
-func Notify(path string, file string, isZip int) error {
-	resp, err := http.PostForm(path, url.Values{"file": {file}, "id": {string(isZip)}})
+func Notify(path string, file string, isZip int, md5 string) error {
+	resp, err := http.PostForm(path, url.Values{"file": {file}, "id": {string(isZip)}, "md5": {md5}})
 	if err != nil{
 		return err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return Msg{Msg:"not 200"}
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err

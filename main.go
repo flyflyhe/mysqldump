@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
+	"github.com/syyongx/php2go"
 	"mysqldump/common"
 	xlog "mysqldump/xlog"
 	"os"
@@ -142,9 +143,15 @@ func main() {
 		}
 
 		if flagUri != "" {
+			md5, err := php2go.Md5File(flagZipName)
+			if err != nil {
+				log.Println(err)
+				os.Exit(1)
+			}
 			for i := 0; i < 10; i++{
-				err := Notify(flagUri, flagZipName, flagZip)
+				err := Notify(flagUri, flagZipName, flagZip, md5)
 				if err != nil {
+					log.Println(err)
 					time.Sleep(time.Second * (time.Duration(i) + 2))
 					continue
 				} else {
