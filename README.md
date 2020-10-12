@@ -1,6 +1,4 @@
 # mysqldump
-[![Go Report Card](https://goreportcard.com/badge/github.com/Jrohy/mysqldump)](https://goreportcard.com/report/github.com/Jrohy/mysqldump)
-[![Downloads](https://img.shields.io/github/downloads/Jrohy/mysqldump/total.svg)](https://img.shields.io/github/downloads/Jrohy/mysqldump/total.svg)
 
 go语言版mysqldump, goroutine并发导sql, 比navicat等工具导出sql快！
 
@@ -16,6 +14,10 @@ go语言版mysqldump, goroutine并发导sql, 比navicat等工具导出sql快！
 - 合并导入和导出sql功能到同一个文件(-i/-o来分区)
 - 提供所有平台的release编译文件
 - 访问数据库使用框架xorm, 使其支持MySQL8和MariaDB
+- 增加where 条件导出功能
+- 增加导出后删除功能
+- 增加导出后压缩功能
+- 增加压缩导入功能
 
 ## 命令行
 ```
@@ -31,4 +33,7 @@ go语言版mysqldump, goroutine并发导sql, 比navicat等工具导出sql快！
     -table  string    指定要备份的table数据(只导表结构)','隔开
     -t        int       指定线程数(默认16)
     -s        int       insert语句的大小(单位byte, 默认1000000)
+    -where    string   id < 1000 where条件
+    -D        int      导出后是否删除 根据批量删除
+    -pk       string   主键名
 ```

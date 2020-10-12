@@ -2,13 +2,13 @@
 
 GITHUB_TOKEN=""
 
-RELEASE_ID=`curl -H 'Cache-Control: no-cache' -s https://api.github.com/repos/Jrohy/mysqldump/releases/latest|grep id|awk 'NR==1{print $2}'|sed 's/,//'`
+RELEASE_ID=`curl -H 'Cache-Control: no-cache' -s https://api.github.com/repos/flyflyhe/mysqldump/releases/latest|grep id|awk 'NR==1{print $2}'|sed 's/,//'`
 
 function uploadfile() {
   FILE=$1
   CTYPE=$(file -b --mime-type $FILE)
 
-  curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Content-Type: ${CTYPE}" --data-binary @$FILE "https://uploads.github.com/repos/Jrohy/mysqldump/releases/${RELEASE_ID}/assets?name=$(basename $FILE)"
+  curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Content-Type: ${CTYPE}" --data-binary @$FILE "https://uploads.github.com/repos/flyflyhe/mysqldump/releases/${RELEASE_ID}/assets?name=$(basename $FILE)"
 
   echo ""
 }
