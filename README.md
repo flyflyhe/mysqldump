@@ -28,7 +28,7 @@ go语言版mysqldump, goroutine并发导sql, 比navicat等工具导出sql快！
     -db       string    指定的数据库名, 导出sql模式必要, 导入sql模式可选,导入模式时为指定要导入的数据库名(不一定和原来导出的数据库名一致)
     -o        string    导出数据库到指定的目录路径, 此命令存在则指定为导出sql模式
     -i        string    指定要导入的sql所在目录路径, 此命令存在则指定为导入sql模式
-    -exclude  string    指定要排除的table数据(只导表结构),多个排除的表用英文','隔开
+    -table  string    指定要备份的table数据(只导表结构)','隔开
     -t        int       指定线程数(默认16)
     -s        int       insert语句的大小(单位byte, 默认1000000)
 ```
