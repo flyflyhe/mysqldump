@@ -122,6 +122,7 @@ func restoreData(log *xlog.Log, table string, engine *xorm.Engine) int {
 func Loader(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 	t := time.Now()
 	files := loadFiles(log, args.Outdir)
+	log.Println(files)
 	_, _ = engine.DB().Exec("SET FOREIGN_KEY_CHECKS=0")
 	go restoreSchema(log, engine, files.functions, "function")
 	go restoreSchema(log, engine, files.procedures, "procedure")
