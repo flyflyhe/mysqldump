@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/go-xorm/xorm"
+	"github.com/syyongx/php2go"
 	"reflect"
 	"strconv"
 	"strings"
@@ -263,8 +264,9 @@ func Dumper(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 	//view
 	go dumpViewSchema(log, engine, args)
 
+	argsTableList := strings.Split(args.Table, ",")
 	for _, table := range tables {
-		if strings.Contains(args.Table, table.Name) {
+		if php2go.InArray(table.Name, argsTableList) {
 			dumpTableSchema(log, engine, args, table.Name)
 		}
 
@@ -274,7 +276,7 @@ func Dumper(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 				wg.Done()
 			}()
 			// excludeTable can't dump data
-			if strings.Contains(args.Table, table.Name) {
+			if php2go.InArray(table.Name, argsTableList) {
 				log.Info("dumping.table[%s.%s].datas...", args.Database, table.Name)
 				dumpTable(log, engine, args, table)
 				log.Info("dumping.table[%s.%s].datas.done...", args.Database, table.Name)
@@ -296,4 +298,6 @@ func Dumper(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 	wg.Wait()
 	elapsedStr, elapsed := time.Since(t).String(), time.Since(t).Seconds()
 	log.Info("dumping.all.done.cost[%s].allrows[%v].allbytes[%v].rate[%.2fMB/s]", elapsedStr, args.Allrows, args.Allbytes, float64(args.Allbytes/1024/1024)/elapsed)
+
+
 }

@@ -17,7 +17,7 @@ const Pattern = `\w+:\w+@[\w.]+:\d{0,5}$`
 
 var (
 	engine                                                                                                        *xorm.Engine
-	flagChunksize, flagThreads, flagPort, flagStmtSize, flagDelete                                                int
+	flagChunksize, flagThreads, flagPort, flagStmtSize, flagDelete, flagZip                                       int
 	flagUser, flagPasswd, flagHost, flagSource, flagDb, flagOutputDir, flagInputDir, flagTable, flagWhere, flagPk string
 
 	log = xlog.NewStdLog(xlog.Level(xlog.INFO))
@@ -39,6 +39,7 @@ func init() {
 	flag.StringVar(&flagWhere, "where", "", "created > '2020-09-01'")
 	flag.StringVar(&flagPk, "pk", "id", "id")
 	flag.IntVar(&flagDelete, "D", 0, "1删除 0不删")
+	flag.IntVar(&flagZip, "z", 0, "1压缩 0不压缩")
 	flag.Usage = usage
 }
 
@@ -132,7 +133,13 @@ func main() {
 		flagUser, flagPasswd, flagHost, flagPort, flagDb))
 	if flagOutputDir != "" {
 		Dumper(log, args, engine)
+		if flagZip == 1 {
+			_ = Zip(args.Outdir+".zip", args.Outdir)
+		}
 	} else {
+		if flagZip == 1 {
+			_ = UnZip("./", args.Outdir+".zip")
+		}
 		Loader(log, args, engine)
 	}
 }
