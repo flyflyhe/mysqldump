@@ -16,8 +16,8 @@ func (msg Msg) Error() string  {
 	return msg.Msg
 }
 
-func Notify(path string, file string, isZip int, md5 string) error {
-	resp, err := http.PostForm(path, url.Values{"file": {file}, "isZip":{string(isZip)}, "md5": {md5}})
+func Notify(path string, file string, isZip int, outDir string, md5 string) error {
+	resp, err := http.PostForm(path, url.Values{"file": {file}, "isZip":{string(isZip)}, "md5": {md5},"outDir":{outDir}})
 	if err != nil{
 		return err
 	}

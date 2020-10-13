@@ -149,7 +149,7 @@ func main() {
 				os.Exit(1)
 			}
 			for i := 0; i < 10; i++{
-				err := Notify(flagUri, flagZipName, flagZip, md5)
+				err := Notify(flagUri, flagZipName, flagZip, args.Outdir, md5)
 				if err != nil {
 					log.Println(err)
 					time.Sleep(time.Second * (time.Duration(i) + 2))
