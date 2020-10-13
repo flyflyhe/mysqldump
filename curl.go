@@ -17,7 +17,7 @@ func (msg Msg) Error() string  {
 }
 
 func Notify(path string, file string, isZip int, md5 string) error {
-	resp, err := http.PostForm(path, url.Values{"file": {file}, "id": {string(isZip)}, "md5": {md5}})
+	resp, err := http.PostForm(path, url.Values{"file": {file}, "isZip":{string(isZip)}, "md5": {md5}})
 	if err != nil{
 		return err
 	}
@@ -31,6 +31,7 @@ func Notify(path string, file string, isZip int, md5 string) error {
 		return err
 	}
 
+	log.Println(string(body))
 	var msg Msg
 
 	err = json.Unmarshal(body, &msg)
