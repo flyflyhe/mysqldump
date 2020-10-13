@@ -220,7 +220,7 @@ func Delete(startId, endId int64, args *common.Args)  {
 	}
 
 	start := startId
-	batch := int64(1000)
+	batch := int64(10000)
 	for {
 		end := start + batch
 		if end > endId {
