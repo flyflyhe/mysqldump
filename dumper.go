@@ -78,7 +78,9 @@ func dumpTable(log *xlog.Log, engine *xorm.Engine, args *common.Args, table *cor
 	cursor, err := engine.DB().Query(querySql)
 	common.AssertNil(err)
 
-	cols := table.ColumnsSeq()
+	//修改获取列顺序 防止跟实际列不一致
+	cols := GetColumns(engine, args.Database, table.Name)
+	log.Println(cols)
 	dialect := engine.Dialect()
 	destColNames := dialect.Quote(strings.Join(cols, dialect.Quote(", ")))
 
@@ -298,6 +300,34 @@ func Dumper(log *xlog.Log, args *common.Args, engine *xorm.Engine) {
 	wg.Wait()
 	elapsedStr, elapsed := time.Since(t).String(), time.Since(t).Seconds()
 	log.Info("dumping.all.done.cost[%s].allrows[%v].allbytes[%v].rate[%.2fMB/s]", elapsedStr, args.Allrows, args.Allbytes, float64(args.Allbytes/1024/1024)/elapsed)
-
-
 }
+
+func GetColumns(engine *xorm.Engine, database, tableName string) []string {
+	db := engine.DB()
+	args := []interface{}{database, tableName}
+	s := "SELECT `COLUMN_NAME`, `IS_NULLABLE`, `COLUMN_DEFAULT`, `COLUMN_TYPE`," +
+		" `COLUMN_KEY`, `EXTRA`,`COLUMN_COMMENT` FROM `INFORMATION_SCHEMA`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ? order by ORDINAL_POSITION"
+
+	rows, err := db.Query(s, args...)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	colSeq := make([]string, 0)
+
+	for rows.Next() {
+		var columnName, isNullable, colType, colKey, extra, comment string
+		var colDefault *string
+		err = rows.Scan(&columnName, &isNullable, &colDefault, &colType, &colKey, &extra, &comment)
+		if err != nil {
+			log.Panic(err.Error())
+		}
+
+		colSeq = append(colSeq, strings.Trim(columnName, "` "))
+	}
+
+	return colSeq
+}
+
+
