@@ -184,7 +184,7 @@ func dumpTable(log *xlog.Log, engine *xorm.Engine, args *common.Args, table *cor
 
 		if (chunkbytes / 1024 / 1024) >= args.ChunksizeInMB {
 			query := strings.Join(inserts, ";\n") + ";\n"
-			file := fmt.Sprintf("%s/%s.%05d.sql", args.Outdir, table.Name, fileNo)
+			file := fmt.Sprintf("%s/%s.%s.%05d.sql", args.Outdir, time.Now().Format("20060102"), table.Name, fileNo)
 			_ = common.WriteFile(file, query)
 
 			log.Info("dumping.table[%s.%s].rows[%v].bytes[%vMB].part[%v]", args.Database, table.Name, allRows, allBytes/1024/1024, fileNo)
