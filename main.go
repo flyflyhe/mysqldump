@@ -165,5 +165,8 @@ func main() {
 			_ = UnZip(args.Outdir, flagZipName)
 		}
 		Loader(log, args, engine)
+		err := php2go.Unlink(args.Outdir)
+		log.Println("删除", args.Outdir, err)
 	}
 }
+
