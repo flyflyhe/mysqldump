@@ -139,30 +139,40 @@ func main() {
 	if flagOutputDir != "" {
 		Dumper(log, args, engine)
 		if flagZip == 1 {
-			_ = Zip(flagZipName, args.Outdir)
-		}
-
-		if flagUri != "" {
-			md5, err := php2go.Md5File(flagZipName)
+			err := Zip(flagZipName, args.Outdir)
 			if err != nil {
 				log.Println(err)
 				os.Exit(1)
 			}
-			for i := 0; i < 10; i++{
-				err := Notify(flagUri, flagZipName, flagZip, args.Outdir, md5)
+		}
+
+		if flagUri != "" {
+			if php2go.FileExists(flagZipName) {
+				md5, err := php2go.Md5File(flagZipName)
 				if err != nil {
 					log.Println(err)
-					time.Sleep(time.Second * (time.Duration(i) + 2))
-					continue
-				} else {
-					break
+					os.Exit(1)
 				}
+				for i := 0; i < 10; i++{
+					err := Notify(flagUri, flagZipName, flagZip, args.Outdir, md5)
+					if err != nil {
+						log.Println(err)
+						time.Sleep(time.Second * (time.Duration(i) + 2))
+						continue
+					} else {
+						break
+					}
+				}
+			} else {
+				log.Println("压缩文件不存在")
 			}
 		}
 
 	} else {
 		if flagZip == 1 {
-			_ = UnZip(args.Outdir, flagZipName)
+			if php2go.FileExists(flagZipName) {
+				_ = UnZip(args.Outdir, flagZipName)
+			}
 		}
 		Loader(log, args, engine)
 		err := php2go.Unlink(args.Outdir)
