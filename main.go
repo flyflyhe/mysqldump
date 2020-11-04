@@ -175,7 +175,7 @@ func main() {
 			}
 		}
 		Loader(log, args, engine)
-		err := php2go.Unlink(args.Outdir)
+		err := os.RemoveAll(args.Outdir)
 		log.Println("删除", args.Outdir, err)
 	}
 }
