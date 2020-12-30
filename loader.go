@@ -110,12 +110,24 @@ func restoreData(log *xlog.Log, table string, engine *xorm.Engine) int {
 	for _, sql := range sqls {
 		if sql != "" {
 			_, _ = engine.DB().Exec("SET FOREIGN_KEY_CHECKS=0")
-			_, err = engine.DB().Exec(sql)
+			//_, err = engine.DB().Exec(sql)
+			ExecSql(engine, sql)
 			common.AssertNil(err)
 		}
 	}
 	log.Info("restoring.tables[%s].parts[%s].done...", tb, part)
 	return len(bytes)
+}
+
+func ExecSql(engine *xorm.Engine, sql string) {
+	if err := recover(); err != nil {
+		fmt.Println(err)
+	}
+
+	_, err := engine.DB().Exec(sql)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // Loader used to start the loader worker.

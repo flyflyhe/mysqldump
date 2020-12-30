@@ -170,10 +170,15 @@ func main() {
 
 	} else {
 		if flagZip == 1 {
+			log.Println("start--1")
 			if php2go.FileExists(flagZipName) {
-				_ = UnZip(args.Outdir, flagZipName)
+				err := UnZip(args.Outdir, flagZipName)
+				if err != nil {
+					log.Fatal(err.Error())
+				}
 			}
 		}
+		log.Println("start")
 		Loader(log, args, engine)
 		err := os.RemoveAll(args.Outdir)
 		log.Println("删除", args.Outdir, err)
